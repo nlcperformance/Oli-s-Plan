@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Oli's Training Dashboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+        }
+        .traffic-light {
+            width: 3rem;
+            height: 3rem;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+        .traffic-light:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 8px rgba(0, 0, 0, 0.15);
+        }
+        .traffic-light.selected {
+            border: 4px solid #3b82f6;
+        }
+        /* Using a more vibrant shade for the selected color */
+        .traffic-light.selected.bg-red-500 {
+            background-color: #ef4444;
+        }
+        .traffic-light.selected.bg-yellow-500 {
+            background-color: #f59e0b;
+        }
+        .traffic-light.selected.bg-green-500 {
+            background-color: #22c55e;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 min-h-screen flex items-center justify-center p-4">
+
+    <div class="bg-white rounded-3xl shadow-2xl p-8 w-full max-w-4xl">
+        
+        <!-- Header -->
+        <header class="text-center mb-12">
+            <h1 class="text-4xl font-bold text-gray-800">Oli's TRS Dashboard</h1>
+            <p class="mt-2 text-lg text-gray-500">Select your readiness and session to see your plan.</p>
+        </header>
+
+        <!-- Control Panel -->
+        <div class="flex flex-col md:flex-row items-center justify-center gap-8 mb-12">
+            
+            <!-- Readiness Selector -->
+            <div class="flex-1 text-center">
+                <p class="text-gray-600 font-semibold mb-3">Felt Readiness</p>
+                <div id="readiness-selector" class="flex justify-center items-center space-x-4">
+                    <div class="traffic-light bg-green-500 selected" data-readiness="Green"></div>
+                    <div class="traffic-light bg-yellow-500" data-readiness="Yellow"></div>
+                    <div class="traffic-light bg-red-500" data-readiness="Red"></div>
+                </div>
+            </div>
+
+            <!-- Session Selector -->
+            <div class="flex-1 text-center">
+                <p class="text-gray-600 font-semibold mb-3">Select Session</p>
+                <div class="flex justify-center space-x-4">
+                    <button id="session-a" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105">Session A</button>
+                    <button id="session-b" class="bg-gray-300 hover:bg-gray-400 text-gray-800 font-bold py-3 px-8 rounded-full shadow-lg transition-all duration-300 transform hover:scale-105">Session B</button>
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Workout Display Section -->
+        <div class="bg-gray-50 p-6 rounded-2xl shadow-inner border border-gray-200">
+            <h2 id="plan-title" class="text-2xl font-bold text-gray-800 mb-6 text-center"></h2>
+            
+            <div id="workout-plan" class="space-y-4">
+                <!-- Workout exercises will be dynamically inserted here -->
+            </div>
+            
+            <div id="no-plan-message" class="text-center text-gray-500 text-lg py-12 hidden">
+                <p>No workout plan found for the selected options.</p>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // The CSV data provided by the user, converted to a string
+        const csvData = `Session,Exercise,Protocol,Weeks 1-2,Progression,Plan Type,Volume,Notes
+A,Bird Dogs,Warm-up,3x10,Maintain,Main,3x10,
+A,Side Plank,Warm-up,3x10s,Maintain,Main,3x10s,
+A,Tib Raises,Warm-up,3x10,Maintain,Main,3x10,
+A,Poliquin Steps,Warm-up,3x10,Maintain,Main,3x10,
+A,Press Up,IVT 10x10,3x10,"Build up to 10x10, then increase weight",Main,3x10,"Build up to 10x10"
+A,VMO Squats,IVT 10x10,3x10,"Build up to 10x10, then increase weight",Main,3x10,"Build up to 10x10"
+A,KB Military Press,IVT 10x10,3x10,"Build up to 10x10, then increase weight",Main,3x10,"Build up to 10x10"
+A,Prying Squat,Cool-down,Hold,Maintain,Main,Hold,
+A,Kneeling Prayer Hold,Cool-down,Hold,Maintain,Main,Hold,
+
+B,Bird Dogs,Warm-up,3x10,Maintain,Main,3x10,
+B,Side Plank,Warm-up,3x10s,Maintain,Main,3x10s,
+B,Tib Raises,Warm-up,3x10,Maintain,Main,3x10,
+B,Poliquin Steps,Warm-up,3x10,Maintain,Main,3x10,
+B,10s Hang,IVT 10x10,3x10s,"Build up to 10x10, then increase weight/duration",Main,3x10s,"Build up to 10x10"
+B,Bulgarian Split Squats,IVT 10x10,3x10,"Build up to 10x10, then increase weight",Main,3x10,"Build up to 10x10"
+B,KB Swing,IVT 10x10,3x10,"Build up to 10x10, then increase weight",Main,3x10,"Build up to 10x10"
+B,Prying Squat,Cool-down,Hold,Maintain,Main,Hold,
+B,Kneeling Prayer Hold,Cool-down,Hold,Maintain,Main,Hold,
+
+Press Up,IVT,Column 1,Column 2,Green Day,10x10,"Progress load only after 10x10 achieved",Column 3
+VMO Squats,IVT,,,Green Day,10x10,Bodyweight or light load until 10x10 achieved
+KB Military Press,IVT,,,Green Day,10x10,Increase weight only after 10x10
+10s Hang,IVT,,,Green Day,10x10s,Add load only after 10x10s achieved
+Bulgarian Split Squats,IVT,,,Green Day,10x10,Progress load only after 10x10
+KB Swing,IVT,,,Green Day,10x10,Progress load only after 10x10
+
+Press Up,IVT (Reduced),,,Yellow Day,5x5,"Focus on form, avoid fatigue"
+VMO Squats,IVT (Reduced),,,Yellow Day,5x5,"Controlled tempo, no strain"
+KB Military Press,IVT (Reduced),,,Yellow Day,5x5,"Lighter load, crisp technique"
+"Accessories (Poliquin Steps, Bird Dogs, Side Planks, Tib Raises)",Warm-up,,,Yellow Day,2x8,Keep easy`;
+
+        let parsedData = [];
+        let selectedSession = 'A';
+        let selectedReadiness = 'Green';
+
+        // Function to parse the CSV string into an array of objects
+        function parseCSV(csv) {
+            const lines = csv.split('\n').filter(line => line.trim() !== '');
+            const headers = lines[0].split(',').map(header => header.trim());
+            const data = lines.slice(1).map(line => {
+                const values = line.match(/(".*?"|[^",\s]+)(?=\s*,|\s*$)/g).map(val => val.replace(/"/g, ''));
+                const obj = {};
+                headers.forEach((header, i) => {
+                    obj[header] = values[i] ? values[i].trim() : '';
+                });
+                return obj;
+            });
+            return data;
+        }
+
+        // Function to update the workout display based on selected filters
+        function updateDashboard() {
+            const workoutPlanDiv = document.getElementById('workout-plan');
+            const planTitle = document.getElementById('plan-title');
+            const noPlanMessage = document.getElementById('no-plan-message');
+            workoutPlanDiv.innerHTML = '';
+            noPlanMessage.classList.add('hidden');
+
+            const filteredData = parsedData.filter(row => {
+                const sessionMatch = row.Session && row.Session.toUpperCase() === selectedSession.toUpperCase();
+                
+                // Determine the correct plan type based on readiness
+                let readinessMatch = false;
+                const planType = row['Plan Type'];
+                if (selectedReadiness === 'Green' && (planType === 'Main' || planType === 'Green Day')) {
+                    readinessMatch = true;
+                } else if (selectedReadiness === 'Yellow' && (planType === 'Main' || planType === 'Yellow Day')) {
+                    readinessMatch = true;
+                } else if (selectedReadiness === 'Red' && (planType === 'Main' || planType === 'Red Day')) {
+                    readinessMatch = true;
+                }
+                
+                return sessionMatch && readinessMatch;
+            });
+            
+            // Set the plan title
+            let readinessText = '';
+            if (selectedReadiness === 'Green') readinessText = 'Green Day';
+            if (selectedReadiness === 'Yellow') readinessText = 'Yellow Day (Reduced)';
+            if (selectedReadiness === 'Red') readinessText = 'Red Day (Rest)';
+            planTitle.textContent = `Session ${selectedSession} (${readinessText})`;
+
+            if (selectedReadiness === 'Red') {
+                planTitle.textContent = `Session ${selectedSession} - Red Day (Rest)`;
+                workoutPlanDiv.innerHTML = `
+                    <div class="text-center text-gray-700 py-4">
+                        <p class="text-xl">It's a rest day. Focus on recovery and light mobility.</p>
+                        <p class="mt-2 text-gray-500">Suggested: Light walking, stretching, or foam rolling.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            if (filteredData.length > 0) {
+                // Group exercises by protocol (e.g., Warm-up, IVT, Cool-down)
+                const groupedExercises = filteredData.reduce((acc, exercise) => {
+                    const protocol = exercise.Protocol || 'General';
+                    if (!acc[protocol]) {
+                        acc[protocol] = [];
+                    }
+                    acc[protocol].push(exercise);
+                    return acc;
+                }, {});
+
+                for (const protocol in groupedExercises) {
+                    const exercises = groupedExercises[protocol];
+                    const protocolDiv = document.createElement('div');
+                    protocolDiv.className = 'bg-gray-100 p-4 rounded-xl mb-4 shadow-sm';
+                    
+                    const protocolTitle = document.createElement('h3');
+                    protocolTitle.className = 'text-lg font-semibold text-gray-700 mb-2 border-b-2 border-gray-200 pb-2';
+                    protocolTitle.textContent = protocol;
+                    protocolDiv.appendChild(protocolTitle);
+
+                    exercises.forEach(exercise => {
+                        const exerciseDiv = document.createElement('div');
+                        exerciseDiv.className = 'flex flex-col sm:flex-row justify-between items-start sm:items-center py-2 border-b border-gray-200 last:border-b-0';
+                        
+                        // Main exercise info
+                        const mainInfo = document.createElement('div');
+                        mainInfo.className = 'flex-1 mb-2 sm:mb-0';
+                        const exerciseName = document.createElement('p');
+                        exerciseName.className = 'font-bold text-gray-800 text-base';
+                        exerciseName.textContent = exercise.Exercise;
+                        
+                        const notes = document.createElement('p');
+                        notes.className = 'text-sm text-gray-500 italic';
+                        notes.textContent = exercise.Notes || '';
+                        
+                        mainInfo.appendChild(exerciseName);
+                        if (notes.textContent) mainInfo.appendChild(notes);
+
+                        // Volume/Load info
+                        const volumeInfo = document.createElement('div');
+                        volumeInfo.className = 'text-right';
+                        const volumeText = document.createElement('p');
+                        volumeText.className = 'font-bold text-lg text-blue-600';
+                        volumeText.textContent = selectedReadiness === 'Green' ? exercise.Volume : exercise.Volume.replace('10x10', '5x5').replace('10x10s', '5x5s').replace('3x10s', '5x5s').replace('3x10', '5x5');
+                        
+                        const loadText = document.createElement('p');
+                        loadText.className = 'text-sm text-gray-500';
+                        loadText.textContent = exercise.Progression || 'Maintain';
+
+                        volumeInfo.appendChild(volumeText);
+                        volumeInfo.appendChild(loadText);
+
+                        exerciseDiv.appendChild(mainInfo);
+                        exerciseDiv.appendChild(volumeInfo);
+
+                        protocolDiv.appendChild(exerciseDiv);
+                    });
+
+                    workoutPlanDiv.appendChild(protocolDiv);
+                }
+            } else {
+                noPlanMessage.classList.remove('hidden');
+            }
+        }
+
+        // --- Event Listeners and Initialization ---
+
+        // Parse the CSV data on load
+        parsedData = parseCSV(csvData);
+        
+        // Traffic Light Selector
+        const readinessSelector = document.getElementById('readiness-selector');
+        readinessSelector.addEventListener('click', (e) => {
+            const selectedLight = e.target.closest('.traffic-light');
+            if (selectedLight) {
+                document.querySelectorAll('.traffic-light').forEach(light => {
+                    light.classList.remove('selected');
+                });
+                selectedLight.classList.add('selected');
+                selectedReadiness = selectedLight.dataset.readiness;
+                updateDashboard();
+            }
+        });
+
+        // Session Selector
+        const sessionAButton = document.getElementById('session-a');
+        const sessionBButton = document.getElementById('session-b');
+
+        sessionAButton.addEventListener('click', () => {
+            selectedSession = 'A';
+            sessionAButton.classList.replace('bg-gray-300', 'bg-blue-600');
+            sessionAButton.classList.replace('text-gray-800', 'text-white');
+            sessionBButton.classList.replace('bg-blue-600', 'bg-gray-300');
+            sessionBButton.classList.replace('text-white', 'text-gray-800');
+            updateDashboard();
+        });
+
+        sessionBButton.addEventListener('click', () => {
+            selectedSession = 'B';
+            sessionBButton.classList.replace('bg-gray-300', 'bg-blue-600');
+            sessionBButton.classList.replace('text-gray-800', 'text-white');
+            sessionAButton.classList.replace('bg-blue-600', 'bg-gray-300');
+            sessionAButton.classList.replace('text-white', 'text-gray-800');
+            updateDashboard();
+        });
+
+        // Initial render
+        updateDashboard();
+
+    </script>
+</body>
+</html>
