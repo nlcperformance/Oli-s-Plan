@@ -46,6 +46,7 @@
         
         <!-- Header -->
         <header class="text-center mb-12">
+            <img src="NLC_Logo_GitHub_Small.jpg" alt="NLC Logo" class="mx-auto w-32 h-auto mb-4 rounded-full">
             <h1 class="text-4xl font-bold text-gray-800">Oli's TRS Dashboard</h1>
             <p class="mt-2 text-lg text-gray-500">Select your readiness and session to see your plan.</p>
         </header>
@@ -99,8 +100,8 @@ A,Poliquin Steps,Warm-up,3x10,Maintain,Main,3x10,
 A,Press Up,IVT 10x10,3x10,"Build up to 10x10, then increase weight",Main,3x10,"Build up to 10x10"
 A,VMO Squats,IVT 10x10,3x10,"Build up to 10x10, then increase weight",Main,3x10,"Build up to 10x10"
 A,KB Military Press,IVT 10x10,3x10,"Build up to 10x10, then increase weight",Main,3x10,"Build up to 10x10"
-A,Prying Squat,Cool-down,Hold,Maintain,Main,Hold,
-A,Kneeling Prayer Hold,Cool-down,Hold,Maintain,Main,Hold,
+A,Prying Squat,Cool-down,30-60s hold,Maintain,Main,30-60s hold,
+A,Kneeling Prayer Hold,Cool-down,30-60s hold,Maintain,Main,30-60s hold,
 
 B,Bird Dogs,Warm-up,3x10,Maintain,Main,3x10,
 B,Side Plank,Warm-up,3x10s,Maintain,Main,3x10s,
@@ -109,8 +110,8 @@ B,Poliquin Steps,Warm-up,3x10,Maintain,Main,3x10,
 B,10s Hang,IVT 10x10,3x10s,"Build up to 10x10, then increase weight/duration",Main,3x10s,"Build up to 10x10"
 B,Bulgarian Split Squats,IVT 10x10,3x10,"Build up to 10x10, then increase weight",Main,3x10,"Build up to 10x10"
 B,KB Swing,IVT 10x10,3x10,"Build up to 10x10, then increase weight",Main,3x10,"Build up to 10x10"
-B,Prying Squat,Cool-down,Hold,Maintain,Main,Hold,
-B,Kneeling Prayer Hold,Cool-down,Hold,Maintain,Main,Hold,
+B,Prying Squat,Cool-down,30-60s hold,Maintain,Main,30-60s hold,
+B,Kneeling Prayer Hold,Cool-down,30-60s hold,Maintain,Main,30-60s hold,
 
 Press Up,IVT,Column 1,Column 2,Green Day,10x10,"Progress load only after 10x10 achieved",Column 3
 VMO Squats,IVT,,,Green Day,10x10,Bodyweight or light load until 10x10 achieved
@@ -230,7 +231,7 @@ KB Military Press,IVT (Reduced),,,Yellow Day,5x5,"Lighter load, crisp technique"
                         volumeInfo.className = 'text-right';
                         const volumeText = document.createElement('p');
                         volumeText.className = 'font-bold text-lg text-blue-600';
-                        volumeText.textContent = selectedReadiness === 'Green' ? exercise.Volume : exercise.Volume.replace('10x10', '5x5').replace('10x10s', '5x5s').replace('3x10s', '5x5s').replace('3x10', '5x5');
+                        volumeText.textContent = exercise.Volume;
                         
                         const loadText = document.createElement('p');
                         loadText.className = 'text-sm text-gray-500';
